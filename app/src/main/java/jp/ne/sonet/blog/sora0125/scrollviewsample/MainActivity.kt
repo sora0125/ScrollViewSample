@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.ScrollView
 import android.widget.TextView
 import android.util.Log
+import android.view.ViewTreeObserver
 import android.widget.EditText
 
 
@@ -29,35 +30,7 @@ class MainActivity : AppCompatActivity() {
         bu.setOnClickListener{
             Log.d(TAG, "button tap")
 
-            // 検索対象のテキスト取得
-            val searchText = editText.text.toString()
-            // テキストビューのテキストを取得
-            var fullText = tv.text.toString()
-            Log.d(TAG, "fullText:$fullText")
-            // テキスト内に検索対象の文字があるかチェック
-            if (fullText.contains(searchText)) {
-
-                // 一致した文字の位置を取得（0開始）
-                val indexOfSearchText = fullText.indexOf(searchText)
-                Log.d(TAG, "indexOfSearchText:$indexOfSearchText")
-                // 文字の位置から検索文字の行数を取得（0開始）
-                val lineNumber = tv.layout.getLineForOffset(indexOfSearchText)
-                Log.d(TAG, "lineNumber:$lineNumber")
-                val highlighted = "<font color='red'>$searchText</font>"
-                Log.d(TAG, "highlighted:$highlighted")
-                fullText = fullText.replace(searchText, highlighted)
-                Log.d(TAG, "fullText replace:$fullText")
-                // htmlに対応するため
-                fullText = fullText.replace("\n", "<br />")
-                Log.d(TAG, "fullText replace:$fullText")
-                tv.text = HtmlCompat.fromHtml(fullText, FROM_HTML_MODE_COMPACT)
-                Log.d(TAG, "tv.text:${tv.text}")
-                // 指定した行までの高さを取得
-                val targetHeight = tv.layout.getLineTop(lineNumber)
-                Log.d(TAG, "targetHeight:$targetHeight")
-                // スクロールさせる
-                sv.smoothScrollTo(0, targetHeight)
-            }
+            searchTextScroller()
 
         }
 
@@ -71,6 +44,48 @@ class MainActivity : AppCompatActivity() {
 //        tv.text = "1\n2\n3\n4\n5\n1\n1あああ\n1\n1\n10\n1\n1\n1\n1\n1\n1\n1\n1\n1\n20\n1\n1あああ\n1\n1\n1\n1\n1\n1\n1\n30\n" +
 //                "31\n2\n3\n4\n5\n1\n1\n1\n1\n40\n1\n1\n1\n1\n1\n1\n1\n1\n1\n50\n1\n1いいい\n1\n1\n1\n1\n1\n1\n1\n60" +
 //                "61\n2\n3\n4\n5\n1\n1\n1\n1\n70\n1\n1\n1\n1\n1\n1うううう\n1\n1\n1\n80\n1\n1\n1\n1\n1\n1\n1\n1\n1\n90\n1\n1\n1\n"
+
+
+        tv.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                editText.setText("純正", TextView.BufferType.NORMAL)
+                searchTextScroller()
+                tv.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+
+        })
+    }
+
+    private fun searchTextScroller() {
+        // 検索対象のテキスト取得
+        val searchText = editText.text.toString()
+        // テキストビューのテキストを取得
+        var fullText = tv.text.toString()
+        Log.d(TAG, "fullText:$fullText")
+        // テキスト内に検索対象の文字があるかチェック
+        if (fullText.contains(searchText)) {
+
+            // 一致した文字の位置を取得（0開始）
+            val indexOfSearchText = fullText.indexOf(searchText)
+            Log.d(TAG, "indexOfSearchText:$indexOfSearchText")
+            // 文字の位置から検索文字の行数を取得（0開始）
+            val lineNumber = tv.layout.getLineForOffset(indexOfSearchText)
+            Log.d(TAG, "lineNumber:$lineNumber")
+            val highlighted = "<font color='red'>$searchText</font>"
+            Log.d(TAG, "highlighted:$highlighted")
+            fullText = fullText.replace(searchText, highlighted)
+            Log.d(TAG, "fullText replace:$fullText")
+            // htmlに対応するため
+            fullText = fullText.replace("\n", "<br />")
+            Log.d(TAG, "fullText replace:$fullText")
+            tv.text = HtmlCompat.fromHtml(fullText, FROM_HTML_MODE_COMPACT)
+            Log.d(TAG, "tv.text:${tv.text}")
+            // 指定した行までの高さを取得
+            val targetHeight = tv.layout.getLineTop(lineNumber)
+            Log.d(TAG, "targetHeight:$targetHeight")
+            // スクロールさせる
+            sv.smoothScrollTo(0, targetHeight)
+        }
 
     }
 }
